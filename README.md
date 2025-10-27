@@ -25,7 +25,7 @@ It allows users to instantly check the current **temperature**, **wind speed**, 
 ## ⚙️ How to Run Locally
 1. Clone the repository:
    ```bash
-   git clone https://github.com/YOUR_USERNAME/weather-now-for-jamie.git
+   git clone https://github.com/YOUR_USERNAME/weather_now.git
 
 📸 Screenshot
 <img width="1920" height="945" alt="Screenshot (250)" src="https://github.com/user-attachments/assets/139e610a-cee1-40b9-8821-221f578c9870" />
