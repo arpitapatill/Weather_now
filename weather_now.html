@@ -3,144 +3,216 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Weather Now</title>
+    <title>Weather Now - For Jamie</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f0f8ff;
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #74b9ff, #0984e3);
+            color: white;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
         }
         h1 {
-            color: #333;
+            margin-bottom: 20px;
+            font-size: 2em;
         }
-        input, button {
+        input {
+            width: 100%;
             padding: 10px;
-            margin: 10px 0;
-            font-size: 16px;
+            border: none;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 1em;
         }
         button {
-            background-color: #4CAF50;
+            background: #00cec9;
             color: white;
             border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
             cursor: pointer;
+            font-size: 1em;
+            margin-bottom: 20px;
         }
         button:hover {
-            background-color: #45a049;
+            background: #00b894;
         }
-        #weather-result {
+        .weather-card {
+            display: none;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 20px;
             margin-top: 20px;
+        }
+        .weather-icon {
+            font-size: 4em;
+            margin-bottom: 10px;
+        }
+        .temp {
+            font-size: 3em;
+            font-weight: bold;
+        }
+        .details {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+        }
+        .detail {
+            text-align: center;
+        }
+        .extra-status {
+            margin-top: 20px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
             padding: 10px;
-            background-color: #e7f3fe;
-            border-left: 6px solid #2196F3;
         }
         .error {
-            color: red;
+            color: #ff7675;
+            margin-top: 20px;
         }
     </style>
 </head>
 <body>
-    <h1>Weather Now - Quick Weather Checker</h1>
-    <p>Enter a city name to get the current weather conditions.</p>
-    <input type="text" id="city-input" placeholder="e.g., New York, London">
-    <button onclick="getWeather()">Get Weather</button>
-    <div id="weather-result"></div>
+    <div class="container">
+        <h1>Weather Now</h1>
+        <input type="text" id="cityInput" placeholder="Enter city name (e.g., New York)">
+        <button onclick="getWeather()">Get Weather</button>
+
+        <div class="weather-card" id="weatherCard">
+            <div class="weather-icon" id="icon">☀️</div>
+            <div class="temp" id="temp">--°C</div>
+            <div id="cityName">City</div>
+
+            <div class="details">
+                <div class="detail">
+                    <div>Humidity</div>
+                    <div id="humidity">--%</div>
+                </div>
+                <div class="detail">
+                    <div>Wind Speed</div>
+                    <div id="wind">-- km/h</div>
+                </div>
+                <div class="detail">
+                    <div>Condition</div>
+                    <div id="condition">Clear</div>
+                </div>
+            </div>
+
+            <div class="extra-status">
+                <div><strong>Temperature Status:</strong> <span id="tempStatus">--</span></div>
+                <div><strong>Wind Status:</strong> <span id="windStatus">--</span></div>
+            </div>
+        </div>
+
+        <div class="error" id="error"></div>
+    </div>
 
     <script>
-        async function getCoordinates(cityName) {
-            const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(cityName)}&format=json&limit=1`;
-            try {
-                const response = await fetch(url);
-                const data = await response.json();
-                if (data.length > 0) {
-                    return { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon) };
-                }
-            } catch (error) {
-                console.error('Error fetching coordinates:', error);
-            }
-            return null;
-        }
-
-        async function getCurrentWeather(lat, lon) {
-            const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`;
-            try {
-                const response = await fetch(url);
-                const data = await response.json();
-                return data.current_weather;
-            } catch (error) {
-                console.error('Error fetching weather:', error);
-            }
-            return null;
-        }
-
-        const weatherDescriptions = {
-            0: "Clear sky",
-            1: "Mainly clear",
-            2: "Partly cloudy",
-            3: "Overcast",
-            45: "Fog",
-            48: "Depositing rime fog",
-            51: "Light drizzle",
-            53: "Moderate drizzle",
-            55: "Dense drizzle",
-            56: "Light freezing drizzle",
-            57: "Dense freezing drizzle",
-            61: "Slight rain",
-            63: "Moderate rain",
-            65: "Heavy rain",
-            66: "Light freezing rain",
-            67: "Heavy freezing rain",
-            71: "Slight snow fall",
-            73: "Moderate snow fall",
-            75: "Heavy snow fall",
-            77: "Snow grains",
-            80: "Slight rain showers",
-            81: "Moderate rain showers",
-            82: "Violent rain showers",
-            85: "Slight snow showers",
-            86: "Heavy snow showers",
-            95: "Thunderstorm",
-            96: "Thunderstorm with slight hail",
-            99: "Thunderstorm with heavy hail"
-        };
+        let intervalId;
 
         async function getWeather() {
-            const city = document.getElementById('city-input').value.trim();
-            const resultDiv = document.getElementById('weather-result');
-            resultDiv.innerHTML = '';
-
+            const city = document.getElementById('cityInput').value.trim();
             if (!city) {
-                resultDiv.innerHTML = '<p class="error">Please enter a valid city name.</p>';
+                showError('Please enter a city name.');
                 return;
             }
 
-            const coords = await getCoordinates(city);
-            if (!coords) {
-                resultDiv.innerHTML = `<p class="error">Could not find coordinates for '${city}'. Please check the city name.</p>`;
-                return;
-            }
+            try {
+                const geoResponse = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(city)}`);
+                const geoData = await geoResponse.json();
+                if (geoData.length === 0) throw new Error('City not found.');
+                const { lat, lon } = geoData[0];
 
-            const weather = await getCurrentWeather(coords.lat, coords.lon);
-            if (weather) {
-                const temperature = weather.temperature;
-                const windspeed = weather.windspeed;
-                const winddirection = weather.winddirection;
-                const weathercode = weather.weathercode;
-                const time = weather.time;
-                const description = weatherDescriptions[weathercode] || "Unknown";
+                const weatherResponse = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=relative_humidity_2m,wind_speed_10m`);
+                const weatherData = await weatherResponse.json();
 
-                resultDiv.innerHTML = `
-                    <h2>Current Weather for ${city}:</h2>
-                    <p><strong>Time:</strong> ${time}</p>
-                    <p><strong>Temperature:</strong> ${temperature}°C</p>
-                    <p><strong>Weather:</strong> ${description}</p>
-                    <p><strong>Wind Speed:</strong> ${windspeed} km/h</p>
-                    <p><strong>Wind Direction:</strong> ${winddirection}°</p>
-                `;
-            } else {
-                resultDiv.innerHTML = '<p class="error">Failed to retrieve weather data. Please try again.</p>';
+                const current = weatherData.current_weather;
+                const temp = Math.round(current.temperature);
+                const windSpeed = Math.round(weatherData.hourly.wind_speed_10m[0]);
+                const humidity = weatherData.hourly.relative_humidity_2m[0];
+                const condition = getCondition(current.weathercode);
+
+                // Determine statuses
+                const tempStatus = getTempStatus(temp);
+                const windStatus = getWindStatus(windSpeed);
+
+                // Update UI
+                document.getElementById('temp').textContent = `${temp}°C`;
+                document.getElementById('cityName').textContent = city;
+                document.getElementById('humidity').textContent = `${humidity}%`;
+                document.getElementById('wind').textContent = `${windSpeed} km/h`;
+                document.getElementById('condition').textContent = condition;
+                document.getElementById('icon').textContent = getIcon(current.weathercode);
+                document.getElementById('tempStatus').textContent = tempStatus;
+                document.getElementById('windStatus').textContent = windStatus;
+
+                document.getElementById('weatherCard').style.display = 'block';
+                document.getElementById('error').textContent = '';
+
+                if (intervalId) clearInterval(intervalId);
+                intervalId = setInterval(() => getWeather(), 300000); // 5 minutes
+            } catch (error) {
+                showError(error.message);
             }
+        }
+
+        function getCondition(code) {
+            const conditions = {
+                0: 'Clear', 1: 'Mainly Clear', 2: 'Partly Cloudy', 3: 'Overcast',
+                45: 'Fog', 48: 'Depositing Rime Fog', 51: 'Light Drizzle', 53: 'Moderate Drizzle',
+                55: 'Dense Drizzle', 56: 'Light Freezing Drizzle', 57: 'Dense Freezing Drizzle',
+                61: 'Slight Rain', 63: 'Moderate Rain', 65: 'Heavy Rain', 66: 'Light Freezing Rain',
+                67: 'Heavy Freezing Rain', 71: 'Slight Snow', 73: 'Moderate Snow', 75: 'Heavy Snow',
+                77: 'Snow Grains', 80: 'Slight Rain Showers', 81: 'Moderate Rain Showers',
+                82: 'Violent Rain Showers', 85: 'Slight Snow Showers', 86: 'Heavy Snow Showers',
+                95: 'Thunderstorm', 96: 'Thunderstorm with Slight Hail', 99: 'Thunderstorm with Heavy Hail'
+            };
+            return conditions[code] || 'Unknown';
+        }
+
+        function getIcon(code) {
+            if (code === 0 || code === 1) return '☀️';
+            if (code >= 2 && code <= 3) return '☁️';
+            if (code >= 45 && code <= 48) return '🌫️';
+            if (code >= 51 && code <= 67) return '🌧️';
+            if (code >= 71 && code <= 86) return '❄️';
+            if (code >= 95) return '⛈️';
+            return '☀️';
+        }
+
+        function getTempStatus(temp) {
+            if (temp <= 10) return 'Cold ❄️';
+            if (temp <= 25) return 'Mild 🌤️';
+            if (temp <= 35) return 'Warm ☀️';
+            return 'Hot 🔥';
+        }
+
+        function getWindStatus(speed) {
+            if (speed < 5) return 'Calm 🌿';
+            if (speed < 15) return 'Breezy 🍃';
+            if (speed < 30) return 'Windy 🌬️';
+            return 'Strong Winds 💨';
+        }
+
+        function showError(message) {
+            document.getElementById('error').textContent = message;
+            document.getElementById('weatherCard').style.display = 'none';
+            if (intervalId) clearInterval(intervalId);
         }
     </script>
 </body>
